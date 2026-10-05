@@ -3,8 +3,19 @@
    Clean, modern admin UI
    ========================================================= */
 
-* {
+/* Scoped so it never leaks into other pages */
+.mg-shell,
+.mg-shell *,
+.mg-shell *::before,
+.mg-shell *::after {
   box-sizing: border-box;
+}
+
+/* Remove the default 8px white border around the page */
+html,
+body {
+  margin: 0;
+  padding: 0;
 }
 
 .mg-shell {
@@ -16,7 +27,9 @@
   --mg-warn: #f59e0b;
 
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
+  overflow-x: hidden;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -83,7 +96,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 16px 20px;
   padding-bottom: 22px;
   margin-bottom: 28px;
   border-bottom: 1px solid var(--border);
@@ -93,9 +107,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .dash-brand-mark {
+  flex-shrink: 0;
   width: 40px;
   height: 40px;
   display: grid;
@@ -115,6 +131,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .dash-brand-text {
@@ -154,9 +171,11 @@
   color: var(--text-soft);
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .dash-system-dot {
+  flex-shrink: 0;
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -170,10 +189,12 @@
 }
 
 .dash-icon-btn {
+  flex-shrink: 0;
   width: 38px;
   height: 38px;
   display: grid;
   place-items: center;
+  padding: 0;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
@@ -193,6 +214,7 @@
   background: var(--mg-primary-soft);
 }
 
+/* Shared icon stroke style */
 .dash-icon-btn svg,
 .dash-brand-mark svg,
 .dash-action-icon svg,
@@ -242,6 +264,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
   padding: 18px 20px;
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -298,6 +321,7 @@
   align-items: center;
   gap: 14px;
   width: 100%;
+  min-width: 0;
   padding: 18px 20px;
   text-align: left;
   font: inherit;
@@ -478,12 +502,6 @@
   stroke-linejoin: round;
 }
 
-@media (max-width: 640px) {
-  .dash-card-foot-row {
-    padding: 12px 16px;
-  }
-}
-
 /* =========================================================
    BUTTONS
    ========================================================= */
@@ -534,12 +552,18 @@
 .dash-table-wrap {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .dash-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+}
+
+/* Wide tables scroll sideways on desktop instead of squashing text */
+.dash-table-wide {
+  min-width: 960px;
 }
 
 .dash-table th {
@@ -560,6 +584,7 @@
   color: var(--text-soft);
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
+  overflow-wrap: anywhere;
 }
 
 .dash-table tbody tr:last-child td {
@@ -578,6 +603,23 @@
 .dash-cell-mono {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 12px;
+}
+
+/* Keeps multi-line cell content stacked (ping + "x ago", place + coords) */
+.dash-cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dash-cell-muted {
+  font-size: 0.82em;
+  opacity: 0.7;
+}
+
+.dash-cell-muted a {
+  color: inherit;
 }
 
 .dash-empty-row td {
@@ -604,6 +646,7 @@
 }
 
 .dash-pill-dot {
+  flex-shrink: 0;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -654,6 +697,7 @@
 
 .dash-search {
   width: 260px;
+  max-width: 100%;
 }
 
 .dash-search::placeholder {
@@ -720,22 +764,6 @@
   gap: 12px;
 }
 
-@media (max-width: 640px) {
-  .dash-card-tools {
-    width: 100%;
-  }
-
-  .dash-search,
-  .dash-select {
-    width: 100%;
-  }
-
-  .dash-pagination {
-    padding: 12px 16px;
-    justify-content: center;
-  }
-}
-
 /* =========================================================
    LOGOUT (bottom center)
    ========================================================= */
@@ -795,7 +823,7 @@
    ACCESSIBILITY
    ========================================================= */
 
-button:focus-visible {
+.mg-shell button:focus-visible {
   outline: 2px solid var(--mg-primary);
   outline-offset: 3px;
 }
@@ -842,6 +870,10 @@ button:focus-visible {
     font-size: 26px;
   }
 
+  .dash-action {
+    padding: 14px 16px;
+  }
+
   .dash-card-head {
     padding: 16px;
   }
@@ -850,11 +882,33 @@ button:focus-visible {
     padding: 12px 16px;
   }
 
+  .dash-card-foot-row {
+    padding: 12px 16px;
+  }
+
   .dash-card-head .dash-btn {
     width: 100%;
   }
 
+  .dash-card-tools {
+    width: 100%;
+  }
+
+  .dash-search,
+  .dash-select {
+    width: 100%;
+  }
+
+  .dash-pagination {
+    padding: 12px 16px;
+    justify-content: center;
+  }
+
   /* Tables become stacked cards on phones */
+  .dash-table-wide {
+    min-width: 0;
+  }
+
   .dash-table thead {
     display: none;
   }
@@ -897,6 +951,11 @@ button:focus-visible {
     text-align: left;
   }
 
+  .dash-table td .dash-cell-stack {
+    align-items: flex-end;
+    text-align: right;
+  }
+
   .dash-empty-row td {
     justify-content: center;
     text-align: center;
@@ -913,4 +972,3 @@ button:focus-visible {
     animation-duration: 0.01ms !important;
   }
 }
-
