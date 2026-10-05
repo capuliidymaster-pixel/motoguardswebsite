@@ -367,7 +367,7 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
           setErrorHint(
             adminExists
               ? "Permission denied. Publish the latest Firestore rules."
-              : "This account is an admin. Add it to the 'admins' collection."
+              : "This account is not an admin. Add it to the 'admins' collection."
           );
         }
       }
@@ -530,8 +530,6 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
     },
   ];
 
-  const mutedStyle = { fontSize: "0.82em", opacity: 0.7 };
-
   return (
     <div className={`mg-shell ${isDarkMode ? "mg-dark" : "mg-light"}`}>
       <div className="dash-page">
@@ -641,7 +639,7 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
                 <span className="dash-action-label">{action.title}</span>
                 <span className="dash-action-hint">{action.hint}</span>
               </span>
-              <span className="dash-action-arrow">{action.icon && icons.arrow}</span>
+              <span className="dash-action-arrow">{icons.arrow}</span>
             </button>
           ))}
         </section>
@@ -755,7 +753,7 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
           </div>
 
           <div className="dash-table-wrap">
-            <table className="dash-table">
+            <table className="dash-table dash-table-wide">
               <thead>
                 <tr>
                   <th>Device ID</th>
@@ -827,33 +825,38 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
                           <StatusPill status={status} />
                         </td>
                         <td data-label="Last ping">
-                          <div>{formatDateTime(pingDate)}</div>
-                          {agoMs !== null && (
-                            <div style={mutedStyle}>{formatAgo(agoMs)}</div>
-                          )}
+                          <div className="dash-cell-stack">
+                            <span>{formatDateTime(pingDate)}</span>
+                            {agoMs !== null && (
+                              <span className="dash-cell-muted">
+                                {formatAgo(agoMs)}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td data-label="Last location">
                           {loc ? (
-                            <>
-                              <div>
+                            <div className="dash-cell-stack">
+                              <span>
                                 {place === undefined
                                   ? "Finding place..."
                                   : place || "Place name unavailable"}
-                              </div>
-                              <div style={mutedStyle}>
+                              </span>
+                              <span className="dash-cell-muted">
                                 {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)} ·{" "}
                                 <a
                                   href={`https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=17/${loc.lat}/${loc.lng}`}
                                   target="_blank"
                                   rel="noreferrer"
-                                  style={{ color: "inherit" }}
                                 >
                                   Open map
                                 </a>
-                              </div>
-                            </>
+                              </span>
+                            </div>
                           ) : (
-                            <span style={mutedStyle}>No location yet</span>
+                            <span className="dash-cell-muted">
+                              No location yet
+                            </span>
                           )}
                         </td>
                       </tr>
