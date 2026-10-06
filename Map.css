@@ -1,0 +1,905 @@
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=JetBrains+Mono:wght@500;600;700&family=Manrope:wght@500;600;700&display=swap");
+
+/* ==================== LIVE MAP STYLES (fullscreen) ====================
+   Lahat ng header/panel styles ay naka-scope sa .mg-fullscreen
+   para HINDI na sila makaapekto sa Dashboard (at vice versa).
+   ===================================================================== */
+
+/* ---- Page shell: no scrolling, map fills the viewport ---- */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* ---- Design tokens (kapareho ng Dashboard) ---- */
+.mg-shell.mg-fullscreen.mg-dark {
+  --bg: #0a0e17; --bg2: #0d1220;
+  --panel: rgba(13, 18, 32, 0.86);
+  --panel-solid: #121826;
+  --border: rgba(42, 51, 70, 0.9);
+  --signal: #00e5c7; --amber: #ffb020; --crimson: #ff3b5c;
+  --text: #f4f6f9; --mist: #8a93a6;
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+.mg-shell.mg-fullscreen.mg-light {
+  --bg: #edf1f6; --bg2: #e4e9f0;
+  --panel: rgba(255, 255, 255, 0.9);
+  --panel-solid: #ffffff;
+  --border: #d3dae3;
+  --signal: #00a88f; --amber: #c97a00; --crimson: #d8214a;
+  --text: #11151e; --mist: #5b6472;
+  --shadow: rgba(0, 0, 0, 0.14);
+}
+
+.mg-shell.mg-fullscreen {
+  --font-display: "Rajdhani", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-body: "Manrope", sans-serif;
+  position: relative;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+.mg-fullscreen *,
+.mg-fullscreen *::before,
+.mg-fullscreen *::after {
+  box-sizing: border-box;
+}
+
+/* ---- Map fills the ENTIRE viewport, edge to edge ---- */
+.mg-fullscreen .mg-map-container.mg-map-fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  border-radius: 0;
+  overflow: hidden;
+  background: #0d1117;
+}
+.mg-fullscreen .mg-map {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.mg-fullscreen .mg-leaflet-map {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* ---- Opt-out ng map area mula sa browser-level auto-dark / color-invert ---- */
+.mg-map-container,
+.mg-leaflet-map,
+.leaflet-container,
+.leaflet-tile-pane,
+.leaflet-tile {
+  color-scheme: light !important;
+  filter: none !important;
+}
+
+/* ---- Lahat ng floating UI ay nasa ibabaw ng map ---- */
+.mg-fullscreen .mg-floating {
+  position: fixed;
+  z-index: 500;
+}
+
+/* Reusable glass panel look */
+.mg-fullscreen .mg-header,
+.mg-fullscreen .mg-status-panel,
+.mg-fullscreen .mg-data-card,
+.mg-fullscreen .mg-data-bar,
+.mg-fullscreen .mg-debug {
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 28px var(--shadow);
+}
+
+/* =====================================================================
+   HEADER  (back + search + firebase status)
+   ===================================================================== */
+.mg-fullscreen .mg-header {
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  z-index: 520; /* mas mataas sa panels para hindi matakpan ang search results */
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  border-radius: 18px;
+}
+.mg-fullscreen .mg-back-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+.mg-fullscreen .mg-back-btn:hover {
+  color: var(--signal);
+  border-color: color-mix(in srgb, var(--signal) 40%, transparent);
+  background: color-mix(in srgb, var(--signal) 10%, transparent);
+}
+.mg-fullscreen .mg-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex-shrink: 0;
+}
+.mg-fullscreen .mg-brand-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+.mg-fullscreen .mg-brand-text {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+.mg-fullscreen .mg-brand-accent {
+  color: var(--signal);
+}
+.mg-fullscreen .mg-firebase-indicator {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+}
+.mg-fullscreen .mg-firebase-indicator.is-on {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+.mg-fullscreen .mg-firebase-indicator.is-off {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+/* =====================================================================
+   LOCATION SEARCH
+   ===================================================================== */
+.mg-fullscreen .mg-search {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 460px;
+  margin-left: 12px;
+}
+.mg-fullscreen .mg-search-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 5px 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.mg-fullscreen .mg-search-form:focus-within {
+  border-color: color-mix(in srgb, var(--signal) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 14%, transparent);
+}
+.mg-fullscreen .mg-search-icon {
+  flex-shrink: 0;
+  color: var(--mist);
+}
+.mg-fullscreen .mg-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+}
+.mg-fullscreen .mg-search-input::placeholder {
+  color: var(--mist);
+  font-weight: 500;
+}
+.mg-fullscreen .mg-search-btn {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--mist);
+  cursor: pointer;
+  transition: color 160ms ease, background 160ms ease;
+}
+.mg-fullscreen .mg-search-btn:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--mist) 14%, transparent);
+}
+.mg-fullscreen .mg-search-submit {
+  color: var(--signal);
+  background: color-mix(in srgb, var(--signal) 14%, transparent);
+}
+.mg-fullscreen .mg-search-submit:hover {
+  color: var(--signal);
+  background: color-mix(in srgb, var(--signal) 26%, transparent);
+}
+.mg-fullscreen .mg-search-submit:disabled {
+  cursor: progress;
+  opacity: 0.8;
+}
+
+.mg-fullscreen .mg-search-results {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+  box-shadow: 0 14px 34px var(--shadow);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.mg-fullscreen .mg-search-msg {
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: var(--mist);
+}
+.mg-fullscreen .mg-search-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+.mg-fullscreen .mg-search-item svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--signal);
+}
+.mg-fullscreen .mg-search-item:hover,
+.mg-fullscreen .mg-search-item:focus-visible {
+  background: color-mix(in srgb, var(--signal) 12%, transparent);
+  outline: none;
+}
+.mg-fullscreen .mg-search-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.mg-fullscreen .mg-search-item-title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.mg-fullscreen .mg-search-item-sub {
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--mist);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mg-fullscreen .mg-spin {
+  animation: mg-spin 0.9s linear infinite;
+}
+@keyframes mg-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Search pin (Leaflet divIcon) ---- */
+.mg-fullscreen .mg-search-pin {
+  background: transparent;
+  border: none;
+}
+.mg-fullscreen .mg-search-pin-shape {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: #00e5c7;
+  border: 3px solid #ffffff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+}
+.mg-fullscreen .mg-search-pin-shape::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: #0a0e17;
+}
+
+/* =====================================================================
+   PANEL BARS (minimize / expand)
+   ===================================================================== */
+.mg-fullscreen .mg-panel-bar,
+.mg-fullscreen .mg-data-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+.mg-fullscreen .mg-panel-bar {
+  width: 100%;
+  padding: 4px 2px 4px 4px;
+  border: none;
+  background: transparent;
+}
+.mg-fullscreen .mg-data-bar {
+  padding: 9px 12px;
+  border-radius: 14px;
+}
+.mg-fullscreen .mg-panel-bar:hover,
+.mg-fullscreen .mg-data-bar:hover {
+  color: var(--signal);
+}
+.mg-fullscreen .mg-data-bar:hover {
+  border-color: color-mix(in srgb, var(--signal) 45%, var(--border));
+}
+.mg-fullscreen .mg-panel-title {
+  flex: 1;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.mg-fullscreen .mg-panel-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.mg-fullscreen .mg-panel-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--s);
+  box-shadow: 0 0 6px var(--s);
+}
+
+/* =====================================================================
+   STATUS PANEL (top-left, below header)
+   ===================================================================== */
+.mg-fullscreen .mg-status-panel {
+  top: 82px;
+  left: 14px;
+  width: min(440px, calc(100vw - 28px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px 12px;
+  border-radius: 20px;
+}
+.mg-fullscreen .mg-status-panel.is-collapsed {
+  width: auto;
+  min-width: 210px;
+  padding: 6px 12px;
+  border-radius: 16px;
+}
+.mg-fullscreen .mg-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+}
+
+.mg-fullscreen .mg-status-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  border-left: 3px solid var(--c, var(--signal));
+}
+.mg-fullscreen .mg-status-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+}
+.mg-fullscreen .mg-status-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.mg-fullscreen .mg-status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mg-fullscreen .mg-status-label {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--c);
+}
+.mg-fullscreen .mg-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--s);
+  background: color-mix(in srgb, var(--s) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--s) 35%, transparent);
+}
+.mg-fullscreen .mg-status-dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--s);
+  box-shadow: 0 0 6px var(--s);
+}
+.mg-fullscreen .mg-status-message {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--mist);
+}
+.mg-fullscreen .mg-status-coords {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--mist);
+}
+.mg-fullscreen .mg-status-time {
+  align-self: flex-start;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--mist);
+}
+
+/* ---- Moto-to-moto metrics ---- */
+.mg-fullscreen .mg-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.mg-fullscreen .mg-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--signal) 30%, var(--border));
+  background: color-mix(in srgb, var(--signal) 7%, transparent);
+}
+.mg-fullscreen .mg-metric-icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  color: var(--signal);
+  background: color-mix(in srgb, var(--signal) 15%, transparent);
+}
+.mg-fullscreen .mg-metric-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mist);
+  white-space: nowrap;
+}
+.mg-fullscreen .mg-metric-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--signal);
+  white-space: nowrap;
+}
+
+/* =====================================================================
+   MAP CONTROLS (zoom + hide panels)
+   ===================================================================== */
+.mg-fullscreen .mg-map-controls {
+  top: 82px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mg-fullscreen .mg-map-btn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 6px 16px var(--shadow);
+  transition: color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.mg-fullscreen .mg-map-btn:hover {
+  color: var(--signal);
+  border-color: color-mix(in srgb, var(--signal) 45%, transparent);
+}
+.mg-fullscreen .mg-map-btn:active {
+  transform: scale(0.94);
+}
+.mg-fullscreen .mg-map-btn.is-active {
+  color: var(--signal);
+  border-color: color-mix(in srgb, var(--signal) 55%, transparent);
+  background: color-mix(in srgb, var(--signal) 14%, var(--panel-solid));
+}
+
+/* =====================================================================
+   FOLLOW FABs (bottom-right)
+   ===================================================================== */
+.mg-fullscreen .mg-fab-column {
+  bottom: 18px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mg-fullscreen .mg-fab {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--c, var(--signal)) 55%, transparent);
+  background: var(--panel-solid);
+  cursor: pointer;
+  box-shadow: 0 8px 20px var(--shadow);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.mg-fullscreen .mg-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px var(--shadow), 0 0 14px color-mix(in srgb, var(--c, var(--signal)) 35%, transparent);
+}
+.mg-fullscreen .mg-fab:active {
+  transform: scale(0.94);
+}
+.mg-fullscreen .mg-fab-reconnect {
+  --c: #ef4444;
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #fff;
+}
+
+/* =====================================================================
+   DATA PANEL (bottom-left)
+   ===================================================================== */
+.mg-fullscreen .mg-data-panel {
+  bottom: 18px;
+  left: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: calc(100vw - 28px);
+}
+.mg-fullscreen .mg-data-cards {
+  display: flex;
+  gap: 10px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.mg-fullscreen .mg-data-card {
+  flex: 0 0 auto;
+  width: 220px;
+  padding: 12px 14px 14px;
+  border-radius: 18px;
+  border-top: 3px solid var(--c);
+}
+.mg-fullscreen .mg-data-panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--c);
+}
+.mg-fullscreen .mg-data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+}
+.mg-fullscreen .mg-data-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.mg-fullscreen .mg-data-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+}
+.mg-fullscreen .mg-data-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.mg-fullscreen .mg-data-label {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+.mg-fullscreen .mg-data-value {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* =====================================================================
+   MARKERS (Leaflet divIcon)
+   ===================================================================== */
+.mg-fullscreen .mg-marker-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.mg-fullscreen .mg-marker-circle {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: color-mix(in srgb, var(--c) 22%, #0d1220);
+  border: 2.5px solid var(--c);
+}
+.mg-fullscreen .mg-marker-circle.is-online {
+  box-shadow: 0 0 14px color-mix(in srgb, var(--c) 55%, transparent), 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+.mg-fullscreen .mg-marker-circle.is-offline {
+  filter: grayscale(0.6);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.mg-fullscreen .mg-marker-emoji {
+  position: relative;
+  z-index: 1;
+  line-height: 1;
+}
+.mg-fullscreen .mg-marker-pulse {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--c);
+  opacity: 0;
+  animation: mg-marker-pulse 2.2s ease-out infinite;
+}
+@keyframes mg-marker-pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(2); opacity: 0; }
+}
+.mg-fullscreen .mg-marker-label {
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  color: var(--c);
+  background: rgba(10, 14, 23, 0.85);
+  border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+/* =====================================================================
+   FALLBACK NOTE
+   ===================================================================== */
+.mg-fullscreen .mg-map-fallback-note {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 24px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--amber);
+  white-space: nowrap;
+  background: var(--panel-solid);
+  border: 1px solid color-mix(in srgb, var(--amber) 40%, var(--border));
+  box-shadow: 0 8px 20px var(--shadow);
+}
+
+/* =====================================================================
+   DEBUG PANEL (tanggalin kapag okay na)
+   ===================================================================== */
+.mg-fullscreen .mg-debug {
+  position: fixed;
+  bottom: 20px;
+  right: 76px;
+  z-index: 9999;
+  max-width: 300px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1.5px solid;
+  background: #0d1117;
+  color: #0f0;
+  font-family: monospace;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.mg-fullscreen .mg-debug.is-light {
+  background: #ffffff;
+  color: #000;
+}
+.mg-fullscreen .mg-debug-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mg-fullscreen .mg-debug-card {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.mg-fullscreen .mg-debug.is-light .mg-debug-card {
+  background: #eee;
+}
+
+/* ---- Scrollbars ---- */
+.mg-fullscreen .mg-panel-body,
+.mg-fullscreen .mg-data-cards,
+.mg-fullscreen .mg-debug {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* ---- Focus + motion ---- */
+.mg-fullscreen .mg-back-btn:focus-visible,
+.mg-fullscreen .mg-map-btn:focus-visible,
+.mg-fullscreen .mg-fab:focus-visible,
+.mg-fullscreen .mg-panel-bar:focus-visible,
+.mg-fullscreen .mg-data-bar:focus-visible,
+.mg-fullscreen .mg-search-btn:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mg-fullscreen .mg-marker-pulse { animation: none; opacity: 0.3; }
+  .mg-fullscreen .mg-spin { animation: none; }
+  .mg-fullscreen .mg-fab,
+  .mg-fullscreen .mg-map-btn { transition: none; }
+}
+
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+@media (max-width: 900px) {
+  .mg-fullscreen .mg-debug { display: none; }
+}
+@media (max-width: 640px) {
+  .mg-fullscreen .mg-header {
+    left: 10px;
+    right: 10px;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .mg-fullscreen .mg-brand { display: none; }
+  .mg-fullscreen .mg-search { margin-left: 0; max-width: none; }
+  .mg-fullscreen .mg-firebase-indicator { padding: 8px; }
+  .mg-fullscreen .mg-firebase-indicator span { display: none; }
+
+  .mg-fullscreen .mg-status-panel {
+    top: 76px;
+    left: 10px;
+    width: calc(100vw - 74px);
+  }
+  .mg-fullscreen .mg-status-panel.is-collapsed { width: auto; }
+  .mg-fullscreen .mg-panel-body { max-height: calc(100vh - 290px); }
+
+  .mg-fullscreen .mg-map-controls { top: 76px; right: 10px; }
+
+  .mg-fullscreen .mg-data-panel { left: 10px; max-width: calc(100vw - 76px); }
+  .mg-fullscreen .mg-data-card { width: 200px; }
+  .mg-fullscreen .mg-fab-column { right: 12px; }
+  .mg-fullscreen .mg-metrics-row { gap: 6px; }
+  .mg-fullscreen .mg-metric { padding: 8px 10px; }
+}
