@@ -4,7 +4,7 @@ import Dashboard from "./Dashboard.jsx";
 import ViewAllUsers from "./ViewAllUsers.jsx";
 import Map from "./Map.jsx";
 import Profile from "./Profile.jsx";
-import Login from "./login.jsx";
+import Login from "./Login.jsx";
 import ProtectedRoute from "./Protectedroute.jsx";
 
 /**
