@@ -150,6 +150,26 @@ const formatAgo = (ms) => {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Up to two initials from a name or email, for avatars
+const getInitials = (value) => {
+  if (!value || typeof value !== "string") return "?";
+  const base = value.includes("@") ? value.split("@")[0] : value;
+  const parts = base.split(/[\s._-]+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+};
+
+// Picks one of 4 avatar colours, always the same for the same text
+const avatarTone = (value) => {
+  const str = String(value ?? "");
+  let hash = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    hash = (hash * 31 + str.charCodeAt(i)) % 4;
+  }
+  return hash + 1;
+};
+
 // Turns a Nominatim reverse result into a short place name
 const shortPlaceName = (data) => {
   const a = data?.address ?? {};
@@ -225,6 +245,19 @@ const icons = {
   shield: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  ),
+  signal: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M2 12h4l3-8 4 16 3-8h6" />
+    </svg>
+  ),
+  offline: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M2 2l20 20" />
+      <path d="M8.5 16.4a5 5 0 0 1 7 0" />
+      <path d="M5 12.9a10 10 0 0 1 5.2-2.7" />
+      <path d="M12 20h.01" />
     </svg>
   ),
 };
@@ -489,8 +522,9 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
     );
     const active = statuses.filter((s) => s === "active").length;
     const offline = statuses.filter((s) => s === "inactive").length;
+    const unlinked = statuses.filter((s) => s === "unlinked").length;
 
-    return { registered: iotDevices.length, active, offline };
+    return { registered: iotDevices.length, active, offline, unlinked };
   }, [iotDevices, gps, nowMs, serverOffsetMs]);
 
   const previewUsers = useMemo(
@@ -505,6 +539,9 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
   };
 
   const systemOk = !usersFailed && !devicesFailed;
+
+  const pct = (n) =>
+    stats.registered > 0 ? `${(n / stats.registered) * 100}%` : "0%";
 
   const quickActions = [
     {
@@ -530,6 +567,8 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
     },
   ];
 
+  const adminLabel = authUser?.email ?? authUser?.displayName ?? "";
+
   return (
     <div className={`mg-shell ${isDarkMode ? "mg-dark" : "mg-light"}`}>
       <div className="dash-page">
@@ -549,6 +588,18 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
           </div>
 
           <div className="dash-header-right">
+            {adminLabel && (
+              <span className="dash-admin-chip" title={adminLabel}>
+                <span className="dash-admin-chip-avatar">
+                  {getInitials(adminLabel)}
+                </span>
+                <span className="dash-admin-chip-text">
+                  {isAdmin ? "Admin · " : ""}
+                  {adminLabel}
+                </span>
+              </span>
+            )}
+
             <span
               className={`dash-system-pill ${
                 systemOk ? "" : "dash-system-pill-error"
@@ -581,7 +632,14 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
             ================================================= */}
 
         <div className="dash-intro">
-          <h1 className="dash-title">Overview</h1>
+          <div>
+            <span className="dash-eyebrow">Control center</span>
+            <h1 className="dash-title">Overview</h1>
+            <p className="dash-intro-sub">
+              Monitor riders and tracking devices across your fleet.
+            </p>
+          </div>
+          <span className="dash-live-tag">Live</span>
         </div>
 
         {/* =================================================
@@ -589,32 +647,44 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
             ================================================= */}
 
         <section className="dash-overview" aria-label="System overview">
-          <div className="dash-stat">
-            <span className="dash-stat-label">Total users</span>
+          <div className="dash-stat dash-stat-blue">
+            <div className="dash-stat-top">
+              <span className="dash-stat-label">Total users</span>
+              <span className="dash-stat-icon">{icons.users}</span>
+            </div>
             <strong className="dash-stat-value">
               {display(users.length, usersFailed)}
             </strong>
             <span className="dash-stat-note">Registered rider accounts</span>
           </div>
 
-          <div className="dash-stat">
-            <span className="dash-stat-label">ESP devices</span>
+          <div className="dash-stat dash-stat-teal">
+            <div className="dash-stat-top">
+              <span className="dash-stat-label">ESP devices</span>
+              <span className="dash-stat-icon">{icons.chip}</span>
+            </div>
             <strong className="dash-stat-value">
               {display(stats.registered, devicesFailed)}
             </strong>
             <span className="dash-stat-note">Registered in the system</span>
           </div>
 
-          <div className="dash-stat">
-            <span className="dash-stat-label">Active devices</span>
+          <div className="dash-stat dash-stat-green">
+            <div className="dash-stat-top">
+              <span className="dash-stat-label">Active devices</span>
+              <span className="dash-stat-icon">{icons.signal}</span>
+            </div>
             <strong className="dash-stat-value dash-tone-active">
               {display(stats.active, devicesFailed)}
             </strong>
             <span className="dash-stat-note">Connected to a rider</span>
           </div>
 
-          <div className="dash-stat">
-            <span className="dash-stat-label">Offline devices</span>
+          <div className="dash-stat dash-stat-amber">
+            <div className="dash-stat-top">
+              <span className="dash-stat-label">Offline devices</span>
+              <span className="dash-stat-icon">{icons.offline}</span>
+            </div>
             <strong className="dash-stat-value dash-tone-inactive">
               {display(stats.offline, devicesFailed)}
             </strong>
@@ -651,7 +721,12 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
         <section className="dash-card" aria-label="Users">
           <div className="dash-card-head">
             <div>
-              <h2 className="dash-card-title">Users</h2>
+              <h2 className="dash-card-title">
+                Users
+                {!loadingData && !usersFailed && (
+                  <span className="dash-card-title-badge">{users.length}</span>
+                )}
+              </h2>
               <p className="dash-card-sub">Most recent registered riders.</p>
             </div>
           </div>
@@ -694,7 +769,17 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
                   previewUsers.map((u) => (
                     <tr key={u.id}>
                       <td data-label="Name" className="dash-cell-strong">
-                        {u.name ?? "—"}
+                        <div className="dash-user">
+                          <span
+                            className={`dash-avatar dash-avatar-${avatarTone(
+                              u.name ?? u.email ?? u.id
+                            )}`}
+                            aria-hidden="true"
+                          >
+                            {getInitials(u.name ?? u.email)}
+                          </span>
+                          <span>{u.name ?? "—"}</span>
+                        </div>
                       </td>
                       <td data-label="Email">{u.email ?? "—"}</td>
                       <td data-label="Registered">
@@ -736,7 +821,14 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
         >
           <div className="dash-card-head">
             <div>
-              <h2 className="dash-card-title">Registered ESP devices</h2>
+              <h2 className="dash-card-title">
+                Registered ESP devices
+                {!loadingData && !devicesFailed && (
+                  <span className="dash-card-title-badge">
+                    {iotDevices.length}
+                  </span>
+                )}
+              </h2>
               <p className="dash-card-sub">
                 Devices in the system, the rider each one is linked to, and
                 where it last reported from.
@@ -751,6 +843,39 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
               Open live map
             </button>
           </div>
+
+          {!loadingData && !devicesFailed && iotDevices.length > 0 && (
+            <div className="dash-fleet" aria-label="Fleet status">
+              <div className="dash-fleet-bar">
+                <span
+                  className="dash-fleet-seg dash-fleet-seg-active"
+                  style={{ width: pct(stats.active) }}
+                />
+                <span
+                  className="dash-fleet-seg dash-fleet-seg-inactive"
+                  style={{ width: pct(stats.offline) }}
+                />
+                <span
+                  className="dash-fleet-seg dash-fleet-seg-unlinked"
+                  style={{ width: pct(stats.unlinked) }}
+                />
+              </div>
+              <div className="dash-fleet-legend">
+                <span className="dash-fleet-item">
+                  <span className="dash-fleet-dot dash-fleet-dot-active" />
+                  Active <strong>{stats.active}</strong>
+                </span>
+                <span className="dash-fleet-item">
+                  <span className="dash-fleet-dot dash-fleet-dot-inactive" />
+                  Offline <strong>{stats.offline}</strong>
+                </span>
+                <span className="dash-fleet-item">
+                  <span className="dash-fleet-dot dash-fleet-dot-unlinked" />
+                  Not linked <strong>{stats.unlinked}</strong>
+                </span>
+              </div>
+            </div>
+          )}
 
           <div className="dash-table-wrap">
             <table className="dash-table dash-table-wide">
@@ -807,13 +932,14 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
 
                     return (
                       <tr key={d.id}>
-                        <td
-                          data-label="Device ID"
-                          className="dash-cell-mono dash-cell-strong"
-                        >
-                          {d.deviceId ?? d.id}
+                        <td data-label="Device ID" className="dash-cell-mono">
+                          <span className="dash-device-id">
+                            {d.deviceId ?? d.id}
+                          </span>
                         </td>
-                        <td data-label="Name">{d.name ?? "—"}</td>
+                        <td data-label="Name" className="dash-cell-strong">
+                          {d.name ?? "—"}
+                        </td>
                         <td data-label="Owner">
                           {owner
                             ? owner.name ?? owner.email ?? "—"
@@ -888,6 +1014,7 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
             {icons.logout}
             {loggingOut ? "Logging out..." : "Log out"}
           </button>
+          <span className="dash-footer-note">MotoGuard · Admin</span>
         </footer>
       </div>
     </div>
