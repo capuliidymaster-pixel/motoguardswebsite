@@ -2,6 +2,7 @@
      "name": "motoguardwebsite",
      "compatibility_date": "2026-10-06",
      "assets": {
-       "directory": "./"
+       "directory": "./dist",
+       "not_found_handling": "single-page-application"
      }
    }
