@@ -196,8 +196,16 @@ function StatusPill({ status }) {
   );
 }
 
-// Simple inline icons (no extra dependency needed)
+// Simple inline icons (only the ones the layout needs)
 const icons = {
+  dashboard: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="9" rx="1.5" />
+      <rect x="14" y="3" width="7" height="5" rx="1.5" />
+      <rect x="14" y="12" width="7" height="9" rx="1.5" />
+      <rect x="3" y="16" width="7" height="5" rx="1.5" />
+    </svg>
+  ),
   users: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -219,9 +227,22 @@ const icons = {
       <circle cx="12" cy="10" r="3" />
     </svg>
   ),
-  arrow: (
+  signal: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M5 12h14M13 6l6 6-6 6" />
+      <path d="M2 12h4l3-8 4 16 3-8h6" />
+    </svg>
+  ),
+  offline: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M2 2l20 20" />
+      <path d="M8.5 16.4a5 5 0 0 1 7 0" />
+      <path d="M5 12.9a10 10 0 0 1 5.2-2.7" />
+      <path d="M12 20h.01" />
+    </svg>
+  ),
+  menu: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 6h16M4 12h16M4 18h16" />
     </svg>
   ),
   sun: (
@@ -247,19 +268,6 @@ const icons = {
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   ),
-  signal: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M2 12h4l3-8 4 16 3-8h6" />
-    </svg>
-  ),
-  offline: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M2 2l20 20" />
-      <path d="M8.5 16.4a5 5 0 0 1 7 0" />
-      <path d="M5 12.9a10 10 0 0 1 5.2-2.7" />
-      <path d="M12 20h.01" />
-    </svg>
-  ),
 };
 
 export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
@@ -274,6 +282,9 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
       return isDarkModeProp;
     }
   });
+
+  // Mobile / tablet sidebar drawer
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Auth
   const [authUser, setAuthUser] = useState(null);
@@ -320,6 +331,10 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
       behavior: "smooth",
       block: "start",
     });
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleLogout = async () => {
@@ -543,26 +558,39 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
   const pct = (n) =>
     stats.registered > 0 ? `${(n / stats.registered) * 100}%` : "0%";
 
-  const quickActions = [
+  const pctLabel = (n) =>
+    stats.registered > 0 ? `${Math.round((n / stats.registered) * 100)}%` : "0%";
+
+  const goTo = (fn) => () => {
+    setSidebarOpen(false);
+    fn();
+  };
+
+  // Sidebar navigation (same targets as the old quick actions)
+  const navItems = [
+    {
+      key: "dashboard",
+      icon: icons.dashboard,
+      title: "Dashboard",
+      onClick: scrollToTop,
+      active: true,
+    },
     {
       key: "users",
       icon: icons.users,
-      title: "View all users",
-      hint: "Browse every registered rider account.",
+      title: "All users",
       onClick: () => navigate("/users"),
     },
     {
       key: "devices",
       icon: icons.chip,
-      title: "Registered ESP devices",
-      hint: "See linked devices and their connection status.",
+      title: "ESP devices",
       onClick: scrollToDevices,
     },
     {
       key: "map",
       icon: icons.map,
       title: "Live map",
-      hint: "Track device locations in real time.",
       onClick: () => navigate("/map"),
     },
   ];
@@ -571,451 +599,523 @@ export default function Dashboard({ isDarkMode: isDarkModeProp = true }) {
 
   return (
     <div className={`mg-shell ${isDarkMode ? "mg-dark" : "mg-light"}`}>
-      <div className="dash-page">
-        {/* =================================================
-            HEADER
-            ================================================= */}
+      {/* =================================================
+          TOP BAR
+          ================================================= */}
 
-        <header className="dash-header">
-          <div className="dash-brand">
-            <span className="dash-brand-mark">{icons.shield}</span>
-            <div className="dash-brand-meta">
-              <span className="dash-brand-text">
-                Moto<span className="dash-brand-accent">Guard</span>
-              </span>
-              <span className="dash-brand-sub">Admin dashboard</span>
-            </div>
+      <header className="mg-topbar">
+        <div className="mg-topbar-left">
+          <button
+            type="button"
+            className="mg-topbar-btn mg-menu-btn"
+            onClick={() => setSidebarOpen((v) => !v)}
+            aria-label="Toggle navigation"
+            aria-expanded={sidebarOpen}
+          >
+            {icons.menu}
+          </button>
+
+          <div className="mg-brand">
+            <span className="mg-brand-mark">{icons.shield}</span>
+            <span className="mg-brand-text">
+              Moto<span className="mg-brand-accent">Guard</span>
+            </span>
           </div>
+        </div>
 
-          <div className="dash-header-right">
-            {adminLabel && (
-              <span className="dash-admin-chip" title={adminLabel}>
-                <span className="dash-admin-chip-avatar">
-                  {getInitials(adminLabel)}
-                </span>
-                <span className="dash-admin-chip-text">
-                  {isAdmin ? "Admin · " : ""}
-                  {adminLabel}
-                </span>
-              </span>
-            )}
-
-            <span
-              className={`dash-system-pill ${
-                systemOk ? "" : "dash-system-pill-error"
-              }`}
-            >
-              <span className="dash-system-dot" aria-hidden="true" />
+        <div className="mg-topbar-right">
+          <span
+            className={`mg-system ${systemOk ? "" : "mg-system-error"}`}
+            role="status"
+          >
+            <span className="mg-system-dot" aria-hidden="true" />
+            <span className="mg-system-text">
               {loadingData
                 ? "Checking system"
                 : systemOk
                 ? "System operational"
                 : "System error"}
             </span>
+          </span>
 
-            <button
-              type="button"
-              className="dash-icon-btn"
-              onClick={toggleTheme}
-              aria-label={
-                isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-              }
-              title={isDarkMode ? "Light mode" : "Dark mode"}
-            >
-              {isDarkMode ? icons.sun : icons.moon}
-            </button>
-          </div>
-        </header>
-
-        {/* =================================================
-            PAGE TITLE
-            ================================================= */}
-
-        <div className="dash-intro">
-          <div>
-            <span className="dash-eyebrow">Control center</span>
-            <h1 className="dash-title">Overview</h1>
-            <p className="dash-intro-sub">
-              Monitor riders and tracking devices across your fleet.
-            </p>
-          </div>
-          <span className="dash-live-tag">Live</span>
-        </div>
-
-        {/* =================================================
-            STATS
-            ================================================= */}
-
-        <section className="dash-overview" aria-label="System overview">
-          <div className="dash-stat dash-stat-blue">
-            <div className="dash-stat-top">
-              <span className="dash-stat-label">Total users</span>
-              <span className="dash-stat-icon">{icons.users}</span>
-            </div>
-            <strong className="dash-stat-value">
-              {display(users.length, usersFailed)}
-            </strong>
-            <span className="dash-stat-note">Registered rider accounts</span>
-          </div>
-
-          <div className="dash-stat dash-stat-teal">
-            <div className="dash-stat-top">
-              <span className="dash-stat-label">ESP devices</span>
-              <span className="dash-stat-icon">{icons.chip}</span>
-            </div>
-            <strong className="dash-stat-value">
-              {display(stats.registered, devicesFailed)}
-            </strong>
-            <span className="dash-stat-note">Registered in the system</span>
-          </div>
-
-          <div className="dash-stat dash-stat-green">
-            <div className="dash-stat-top">
-              <span className="dash-stat-label">Active devices</span>
-              <span className="dash-stat-icon">{icons.signal}</span>
-            </div>
-            <strong className="dash-stat-value dash-tone-active">
-              {display(stats.active, devicesFailed)}
-            </strong>
-            <span className="dash-stat-note">Connected to a rider</span>
-          </div>
-
-          <div className="dash-stat dash-stat-amber">
-            <div className="dash-stat-top">
-              <span className="dash-stat-label">Offline devices</span>
-              <span className="dash-stat-icon">{icons.offline}</span>
-            </div>
-            <strong className="dash-stat-value dash-tone-inactive">
-              {display(stats.offline, devicesFailed)}
-            </strong>
-            <span className="dash-stat-note">Not reporting</span>
-          </div>
-        </section>
-
-        {/* =================================================
-            QUICK ACTIONS
-            ================================================= */}
-
-        <section className="dash-actions" aria-label="Quick actions">
-          {quickActions.map((action) => (
-            <button
-              key={action.key}
-              type="button"
-              className="dash-action"
-              onClick={action.onClick}
-            >
-              <span className="dash-action-icon">{action.icon}</span>
-              <span className="dash-action-text">
-                <span className="dash-action-label">{action.title}</span>
-                <span className="dash-action-hint">{action.hint}</span>
-              </span>
-              <span className="dash-action-arrow">{icons.arrow}</span>
-            </button>
-          ))}
-        </section>
-
-        {/* =================================================
-            USERS
-            ================================================= */}
-
-        <section className="dash-card" aria-label="Users">
-          <div className="dash-card-head">
-            <div>
-              <h2 className="dash-card-title">
-                Users
-                {!loadingData && !usersFailed && (
-                  <span className="dash-card-title-badge">{users.length}</span>
-                )}
-              </h2>
-              <p className="dash-card-sub">Most recent registered riders.</p>
-            </div>
-          </div>
-
-          <div className="dash-table-wrap">
-            <table className="dash-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Registered</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {loadingData && (
-                  <tr className="dash-empty-row">
-                    <td colSpan={3}>Loading users...</td>
-                  </tr>
-                )}
-
-                {!loadingData && usersFailed && (
-                  <tr className="dash-empty-row">
-                    <td colSpan={3}>
-                      Users could not be loaded.{" "}
-                      {errorHint ||
-                        "Check your connection and Firestore permissions, then refresh."}
-                    </td>
-                  </tr>
-                )}
-
-                {!loadingData && !usersFailed && previewUsers.length === 0 && (
-                  <tr className="dash-empty-row">
-                    <td colSpan={3}>No users have registered yet.</td>
-                  </tr>
-                )}
-
-                {!loadingData &&
-                  !usersFailed &&
-                  previewUsers.map((u) => (
-                    <tr key={u.id}>
-                      <td data-label="Name" className="dash-cell-strong">
-                        <div className="dash-user">
-                          <span
-                            className={`dash-avatar dash-avatar-${avatarTone(
-                              u.name ?? u.email ?? u.id
-                            )}`}
-                            aria-hidden="true"
-                          >
-                            {getInitials(u.name ?? u.email)}
-                          </span>
-                          <span>{u.name ?? "—"}</span>
-                        </div>
-                      </td>
-                      <td data-label="Email">{u.email ?? "—"}</td>
-                      <td data-label="Registered">
-                        {formatDate(getRegisteredAt(u))}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-
-          {!loadingData && !usersFailed && users.length > 0 && (
-            <div className="dash-card-foot-row">
-              <span className="dash-card-foot-text">
-                Showing {previewUsers.length} of {users.length}{" "}
-                {users.length === 1 ? "user" : "users"}
-              </span>
-
-              <button
-                type="button"
-                className="dash-see-more"
-                onClick={() => navigate("/users")}
-              >
-                See more
-                <span className="dash-see-more-icon">{icons.arrow}</span>
-              </button>
-            </div>
-          )}
-        </section>
-
-        {/* =================================================
-            ESP DEVICES
-            ================================================= */}
-
-        <section
-          className="dash-card"
-          aria-label="Registered ESP devices"
-          ref={espSectionRef}
-        >
-          <div className="dash-card-head">
-            <div>
-              <h2 className="dash-card-title">
-                Registered ESP devices
-                {!loadingData && !devicesFailed && (
-                  <span className="dash-card-title-badge">
-                    {iotDevices.length}
-                  </span>
-                )}
-              </h2>
-              <p className="dash-card-sub">
-                Devices in the system, the rider each one is linked to, and
-                where it last reported from.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              className="dash-btn dash-btn-ghost"
-              onClick={() => navigate("/map")}
-            >
-              Open live map
-            </button>
-          </div>
-
-          {!loadingData && !devicesFailed && iotDevices.length > 0 && (
-            <div className="dash-fleet" aria-label="Fleet status">
-              <div className="dash-fleet-bar">
-                <span
-                  className="dash-fleet-seg dash-fleet-seg-active"
-                  style={{ width: pct(stats.active) }}
-                />
-                <span
-                  className="dash-fleet-seg dash-fleet-seg-inactive"
-                  style={{ width: pct(stats.offline) }}
-                />
-                <span
-                  className="dash-fleet-seg dash-fleet-seg-unlinked"
-                  style={{ width: pct(stats.unlinked) }}
-                />
-              </div>
-              <div className="dash-fleet-legend">
-                <span className="dash-fleet-item">
-                  <span className="dash-fleet-dot dash-fleet-dot-active" />
-                  Active <strong>{stats.active}</strong>
-                </span>
-                <span className="dash-fleet-item">
-                  <span className="dash-fleet-dot dash-fleet-dot-inactive" />
-                  Offline <strong>{stats.offline}</strong>
-                </span>
-                <span className="dash-fleet-item">
-                  <span className="dash-fleet-dot dash-fleet-dot-unlinked" />
-                  Not linked <strong>{stats.unlinked}</strong>
-                </span>
-              </div>
-            </div>
-          )}
-
-          <div className="dash-table-wrap">
-            <table className="dash-table dash-table-wide">
-              <thead>
-                <tr>
-                  <th>Device ID</th>
-                  <th>Name</th>
-                  <th>Owner</th>
-                  <th>Connection</th>
-                  <th>Last ping</th>
-                  <th>Last location</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {loadingData && (
-                  <tr className="dash-empty-row">
-                    <td colSpan={6}>Loading devices...</td>
-                  </tr>
-                )}
-
-                {!loadingData && devicesFailed && (
-                  <tr className="dash-empty-row">
-                    <td colSpan={6}>Devices could not be loaded.</td>
-                  </tr>
-                )}
-
-                {!loadingData && !devicesFailed && iotDevices.length === 0 && (
-                  <tr className="dash-empty-row">
-                    <td colSpan={6}>No ESP devices are registered yet.</td>
-                  </tr>
-                )}
-
-                {!loadingData &&
-                  !devicesFailed &&
-                  iotDevices.map((d) => {
-                    const owner = d.connectedUserId
-                      ? userById.get(d.connectedUserId)
-                      : null;
-
-                    const live = gps[getGpsKey(d)];
-                    const status = getIotStatus(d, live, nowMs, serverOffsetMs);
-
-                    // Last ping: live GPS ping first, Firestore lastSeen as fallback
-                    const pingMs =
-                      getPingMs(live) ?? getLastSeen(d)?.getTime() ?? null;
-                    const pingDate = pingMs ? new Date(pingMs) : null;
-                    const agoMs =
-                      pingMs !== null ? nowMs + serverOffsetMs - pingMs : null;
-
-                    // Last known location
-                    const loc = getLocation(live);
-                    const place = loc ? places[placeKey(loc)] : undefined;
-
-                    return (
-                      <tr key={d.id}>
-                        <td data-label="Device ID" className="dash-cell-mono">
-                          <span className="dash-device-id">
-                            {d.deviceId ?? d.id}
-                          </span>
-                        </td>
-                        <td data-label="Name" className="dash-cell-strong">
-                          {d.name ?? "—"}
-                        </td>
-                        <td data-label="Owner">
-                          {owner
-                            ? owner.name ?? owner.email ?? "—"
-                            : d.connectedUserId
-                            ? "Unknown rider"
-                            : "—"}
-                        </td>
-                        <td data-label="Connection">
-                          <StatusPill status={status} />
-                        </td>
-                        <td data-label="Last ping">
-                          <div className="dash-cell-stack">
-                            <span>{formatDateTime(pingDate)}</span>
-                            {agoMs !== null && (
-                              <span className="dash-cell-muted">
-                                {formatAgo(agoMs)}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td data-label="Last location">
-                          {loc ? (
-                            <div className="dash-cell-stack">
-                              <span>
-                                {place === undefined
-                                  ? "Finding place..."
-                                  : place || "Place name unavailable"}
-                              </span>
-                              <span className="dash-cell-muted">
-                                {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)} ·{" "}
-                                <a
-                                  href={`https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=17/${loc.lat}/${loc.lng}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                >
-                                  Open map
-                                </a>
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="dash-cell-muted">
-                              No location yet
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
-          </div>
-
-          {!loadingData && !devicesFailed && iotDevices.length > 0 && (
-            <p className="dash-card-foot">
-              {iotDevices.length}{" "}
-              {iotDevices.length === 1 ? "device" : "devices"} registered
-            </p>
-          )}
-        </section>
-
-        {/* =================================================
-            LOGOUT
-            ================================================= */}
-
-        <footer className="dash-footer">
           <button
             type="button"
-            className="dash-logout"
+            className="mg-topbar-btn"
+            onClick={toggleTheme}
+            aria-label={
+              isDarkMode ? "Switch to light mode" : "Switch to dark mode"
+            }
+            title={isDarkMode ? "Light mode" : "Dark mode"}
+          >
+            {isDarkMode ? icons.sun : icons.moon}
+          </button>
+
+          {adminLabel && (
+            <span className="mg-admin" title={adminLabel}>
+              <span className="mg-admin-avatar">{getInitials(adminLabel)}</span>
+              <span className="mg-admin-text">{adminLabel}</span>
+            </span>
+          )}
+        </div>
+      </header>
+
+      <div className="mg-body">
+        {/* =================================================
+            SIDEBAR
+            ================================================= */}
+
+        <aside className={`mg-side ${sidebarOpen ? "is-open" : ""}`}>
+          <div className="mg-side-profile">
+            <span
+              className={`dash-avatar dash-avatar-lg dash-avatar-${avatarTone(
+                adminLabel
+              )}`}
+              aria-hidden="true"
+            >
+              {getInitials(adminLabel)}
+            </span>
+            <div className="mg-side-profile-text">
+              <strong title={adminLabel}>{adminLabel || "Administrator"}</strong>
+              <span>{isAdmin ? "Administrator" : "Signed in"}</span>
+            </div>
+          </div>
+
+          <nav className="mg-side-nav" aria-label="Main navigation">
+            <span className="mg-side-label">Navigation</span>
+            {navItems.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className={`mg-side-link ${item.active ? "is-active" : ""}`}
+                onClick={goTo(item.onClick)}
+              >
+                <span className="mg-side-icon">{item.icon}</span>
+                {item.title}
+              </button>
+            ))}
+          </nav>
+
+          <button
+            type="button"
+            className="mg-side-logout"
             onClick={handleLogout}
             disabled={loggingOut}
           >
             {icons.logout}
             {loggingOut ? "Logging out..." : "Log out"}
           </button>
-          <span className="dash-footer-note">MotoGuard · Admin</span>
-        </footer>
+        </aside>
+
+        {sidebarOpen && (
+          <button
+            type="button"
+            className="mg-scrim"
+            aria-label="Close navigation"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* =================================================
+            MAIN CONTENT
+            ================================================= */}
+
+        <main className="mg-content">
+          <section className="mg-banner">
+            <div>
+              <h1 className="mg-banner-title">Dashboard</h1>
+              <p className="mg-banner-sub">
+                Monitor riders and tracking devices across your fleet.
+              </p>
+            </div>
+            <span className="mg-banner-crumb">
+              MotoGuard <span aria-hidden="true">›</span> Dashboard
+            </span>
+          </section>
+
+          <div className="mg-main">
+            {/* ---------- STATS ---------- */}
+            <section className="mg-stats" aria-label="System overview">
+              <div className="mg-panel mg-statgrid">
+                <div className="mg-statcell">
+                  <span className="mg-statcell-icon mg-c-blue">
+                    {icons.users}
+                  </span>
+                  <div>
+                    <strong className="mg-statcell-value">
+                      {display(users.length, usersFailed)}
+                    </strong>
+                    <span className="mg-statcell-label">Total users</span>
+                  </div>
+                </div>
+
+                <div className="mg-statcell">
+                  <span className="mg-statcell-icon mg-c-teal">
+                    {icons.chip}
+                  </span>
+                  <div>
+                    <strong className="mg-statcell-value">
+                      {display(stats.registered, devicesFailed)}
+                    </strong>
+                    <span className="mg-statcell-label">ESP devices</span>
+                  </div>
+                </div>
+
+                <div className="mg-statcell">
+                  <span className="mg-statcell-icon mg-c-green">
+                    {icons.signal}
+                  </span>
+                  <div>
+                    <strong className="mg-statcell-value dash-tone-active">
+                      {display(stats.active, devicesFailed)}
+                    </strong>
+                    <span className="mg-statcell-label">Active devices</span>
+                  </div>
+                </div>
+
+                <div className="mg-statcell">
+                  <span className="mg-statcell-icon mg-c-amber">
+                    {icons.offline}
+                  </span>
+                  <div>
+                    <strong className="mg-statcell-value dash-tone-inactive">
+                      {display(stats.offline, devicesFailed)}
+                    </strong>
+                    <span className="mg-statcell-label">Offline devices</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mg-tile mg-tile-green">
+                <strong className="mg-tile-value">
+                  {loadingData || devicesFailed
+                    ? display(null, devicesFailed)
+                    : pctLabel(stats.active)}
+                </strong>
+                <span className="mg-tile-label">Fleet online rate</span>
+                <span className="mg-tile-note">Devices reporting live</span>
+              </div>
+
+              <div className="mg-tile mg-tile-blue">
+                <strong className="mg-tile-value">
+                  {display(stats.unlinked, devicesFailed)}
+                </strong>
+                <span className="mg-tile-label">Not linked</span>
+                <span className="mg-tile-note">Not assigned to a rider</span>
+              </div>
+            </section>
+
+            {/* ---------- USERS + FLEET ---------- */}
+            <div className="mg-row">
+              <section className="mg-panel dash-card" aria-label="Users">
+                <div className="dash-card-head">
+                  <div>
+                    <h2 className="dash-card-title">
+                      Users
+                      {!loadingData && !usersFailed && (
+                        <span className="dash-card-title-badge">
+                          {users.length}
+                        </span>
+                      )}
+                    </h2>
+                    <p className="dash-card-sub">
+                      Most recent registered riders.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="dash-table-wrap">
+                  <table className="dash-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Registered</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {loadingData && (
+                        <tr className="dash-empty-row">
+                          <td colSpan={3}>Loading users...</td>
+                        </tr>
+                      )}
+
+                      {!loadingData && usersFailed && (
+                        <tr className="dash-empty-row">
+                          <td colSpan={3}>
+                            Users could not be loaded.{" "}
+                            {errorHint ||
+                              "Check your connection and Firestore permissions, then refresh."}
+                          </td>
+                        </tr>
+                      )}
+
+                      {!loadingData &&
+                        !usersFailed &&
+                        previewUsers.length === 0 && (
+                          <tr className="dash-empty-row">
+                            <td colSpan={3}>No users have registered yet.</td>
+                          </tr>
+                        )}
+
+                      {!loadingData &&
+                        !usersFailed &&
+                        previewUsers.map((u) => (
+                          <tr key={u.id}>
+                            <td data-label="Name" className="dash-cell-strong">
+                              <div className="dash-user">
+                                <span
+                                  className={`dash-avatar dash-avatar-${avatarTone(
+                                    u.name ?? u.email ?? u.id
+                                  )}`}
+                                  aria-hidden="true"
+                                >
+                                  {getInitials(u.name ?? u.email)}
+                                </span>
+                                <span>{u.name ?? "—"}</span>
+                              </div>
+                            </td>
+                            <td data-label="Email">{u.email ?? "—"}</td>
+                            <td data-label="Registered">
+                              {formatDate(getRegisteredAt(u))}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {!loadingData && !usersFailed && users.length > 0 && (
+                  <div className="dash-card-foot-row">
+                    <span className="dash-card-foot-text">
+                      Showing {previewUsers.length} of {users.length}{" "}
+                      {users.length === 1 ? "user" : "users"}
+                    </span>
+
+                    <button
+                      type="button"
+                      className="dash-see-more"
+                      onClick={() => navigate("/users")}
+                    >
+                      See more
+                    </button>
+                  </div>
+                )}
+              </section>
+
+              <section
+                className="mg-panel dash-card mg-fleet"
+                aria-label="Fleet status"
+              >
+                <div className="dash-card-head">
+                  <div>
+                    <h2 className="dash-card-title">Fleet status</h2>
+                    <p className="dash-card-sub">
+                      Share of registered devices by connection.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mg-fleet-body">
+                  {[
+                    ["Active", stats.active, "active"],
+                    ["Offline", stats.offline, "inactive"],
+                    ["Not linked", stats.unlinked, "unlinked"],
+                  ].map(([label, count, tone]) => (
+                    <div className="mg-meter" key={tone}>
+                      <div className="mg-meter-top">
+                        <span>{label}</span>
+                        <strong>
+                          {loadingData || devicesFailed
+                            ? display(null, devicesFailed)
+                            : `${count} · ${pctLabel(count)}`}
+                        </strong>
+                      </div>
+                      <div className="mg-meter-track">
+                        <span
+                          className={`mg-meter-fill mg-meter-${tone}`}
+                          style={{
+                            width:
+                              loadingData || devicesFailed ? "0%" : pct(count),
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            {/* ---------- ESP DEVICES ---------- */}
+            <section
+              className="mg-panel dash-card"
+              aria-label="Registered ESP devices"
+              ref={espSectionRef}
+            >
+              <div className="dash-card-head">
+                <div>
+                  <h2 className="dash-card-title">
+                    Registered ESP devices
+                    {!loadingData && !devicesFailed && (
+                      <span className="dash-card-title-badge">
+                        {iotDevices.length}
+                      </span>
+                    )}
+                  </h2>
+                  <p className="dash-card-sub">
+                    Devices in the system, the rider each one is linked to, and
+                    where it last reported from.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="dash-btn dash-btn-primary"
+                  onClick={() => navigate("/map")}
+                >
+                  Open live map
+                </button>
+              </div>
+
+              <div className="dash-table-wrap">
+                <table className="dash-table dash-table-wide">
+                  <thead>
+                    <tr>
+                      <th>Device ID</th>
+                      <th>Name</th>
+                      <th>Owner</th>
+                      <th>Connection</th>
+                      <th>Last ping</th>
+                      <th>Last location</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {loadingData && (
+                      <tr className="dash-empty-row">
+                        <td colSpan={6}>Loading devices...</td>
+                      </tr>
+                    )}
+
+                    {!loadingData && devicesFailed && (
+                      <tr className="dash-empty-row">
+                        <td colSpan={6}>Devices could not be loaded.</td>
+                      </tr>
+                    )}
+
+                    {!loadingData &&
+                      !devicesFailed &&
+                      iotDevices.length === 0 && (
+                        <tr className="dash-empty-row">
+                          <td colSpan={6}>No ESP devices are registered yet.</td>
+                        </tr>
+                      )}
+
+                    {!loadingData &&
+                      !devicesFailed &&
+                      iotDevices.map((d) => {
+                        const owner = d.connectedUserId
+                          ? userById.get(d.connectedUserId)
+                          : null;
+
+                        const live = gps[getGpsKey(d)];
+                        const status = getIotStatus(
+                          d,
+                          live,
+                          nowMs,
+                          serverOffsetMs
+                        );
+
+                        // Last ping: live GPS ping first, Firestore lastSeen as fallback
+                        const pingMs =
+                          getPingMs(live) ?? getLastSeen(d)?.getTime() ?? null;
+                        const pingDate = pingMs ? new Date(pingMs) : null;
+                        const agoMs =
+                          pingMs !== null
+                            ? nowMs + serverOffsetMs - pingMs
+                            : null;
+
+                        // Last known location
+                        const loc = getLocation(live);
+                        const place = loc ? places[placeKey(loc)] : undefined;
+
+                        return (
+                          <tr key={d.id}>
+                            <td
+                              data-label="Device ID"
+                              className="dash-cell-mono"
+                            >
+                              <span className="dash-device-id">
+                                {d.deviceId ?? d.id}
+                              </span>
+                            </td>
+                            <td data-label="Name" className="dash-cell-strong">
+                              {d.name ?? "—"}
+                            </td>
+                            <td data-label="Owner">
+                              {owner
+                                ? owner.name ?? owner.email ?? "—"
+                                : d.connectedUserId
+                                ? "Unknown rider"
+                                : "—"}
+                            </td>
+                            <td data-label="Connection">
+                              <StatusPill status={status} />
+                            </td>
+                            <td data-label="Last ping">
+                              <div className="dash-cell-stack">
+                                <span>{formatDateTime(pingDate)}</span>
+                                {agoMs !== null && (
+                                  <span className="dash-cell-muted">
+                                    {formatAgo(agoMs)}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td data-label="Last location">
+                              {loc ? (
+                                <div className="dash-cell-stack">
+                                  <span>
+                                    {place === undefined
+                                      ? "Finding place..."
+                                      : place || "Place name unavailable"}
+                                  </span>
+                                  <span className="dash-cell-muted">
+                                    {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)}{" "}
+                                    ·{" "}
+                                    <a
+                                      href={`https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=17/${loc.lat}/${loc.lng}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      Open map
+                                    </a>
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="dash-cell-muted">
+                                  No location yet
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+
+              {!loadingData && !devicesFailed && iotDevices.length > 0 && (
+                <p className="dash-card-foot">
+                  {iotDevices.length}{" "}
+                  {iotDevices.length === 1 ? "device" : "devices"} registered
+                </p>
+              )}
+            </section>
+
+            <footer className="mg-footer">MotoGuard · Admin</footer>
+          </div>
+        </main>
       </div>
     </div>
   );
