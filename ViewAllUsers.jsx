@@ -18,7 +18,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import "./Dashboard.css";
-import "./ViewAllUsers.css";
+import "./ViewallUsers.css";
 
 const PAGE_SIZE = 10;
 const CONFIRM_WORD = "DELETE";
