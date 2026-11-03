@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./Dashboard.jsx";
 import ViewAllUsers from "./ViewAllUsers.jsx";
 import Map from "./Map.jsx";
-import Profile from "./Profile.jsx";
 import Login from "./Login.jsx";
 import ProtectedRoute from "./Protectedroute.jsx";
 
@@ -56,17 +55,7 @@ function App() {
         }
       />
 
-      {/* Profile Route - User Profile (Protected) */}
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile isDarkMode={isDarkMode} />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Default Route - deretso sa dashboard (ProtectedRoute ang magpapabalik sa /login kung hindi naka-login) */}
+      {/* Default Route - deretso sa dashboard */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
       {/* Catch-all - kahit anong hindi kilalang path */}

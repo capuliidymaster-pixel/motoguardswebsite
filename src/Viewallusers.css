@@ -1,0 +1,1131 @@
+
+/* =========================================================
+   MOTOGUARD — VIEW ALL USERS
+   Responsive, theme-aware dashboard
+   ========================================================= */
+
+.mg-shell.mg-dark {
+  --vau-surface: #131b2d;
+  --vau-surface-2: #1a2438;
+  --vau-hover: rgba(255,255,255,.045);
+  --vau-line: rgba(148,163,184,.15);
+  --vau-text: #e8edf6;
+  --vau-muted: #8d9ab3;
+  --vau-accent: #4f8cff;
+  --vau-accent-soft: rgba(79,140,255,.13);
+  --vau-ok: #34d399;
+  --vau-warn: #fbbf24;
+  --vau-danger: #ef4444;
+  --vau-danger-soft: rgba(239,68,68,.12);
+  --vau-teal: #2dd4bf;
+  --vau-shadow: 0 16px 45px rgba(0,0,0,.16);
+}
+
+.mg-shell.mg-light {
+  --vau-surface: #fff;
+  --vau-surface-2: #f5f7fb;
+  --vau-hover: rgba(15,23,42,.035);
+  --vau-line: #e5eaf2;
+  --vau-text: #172033;
+  --vau-muted: #68758c;
+  --vau-accent: #2563eb;
+  --vau-accent-soft: rgba(37,99,235,.09);
+  --vau-ok: #059669;
+  --vau-warn: #b45309;
+  --vau-danger: #dc2626;
+  --vau-danger-soft: rgba(220,38,38,.08);
+  --vau-teal: #0d9488;
+  --vau-shadow: 0 12px 35px rgba(15,23,42,.06);
+}
+
+.mg-shell .vau-muted {
+  color: var(--vau-muted);
+}
+
+.mg-shell .vau-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.mg-shell .vau-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Header */
+
+.mg-shell .vau-header {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 22px;
+  padding: 18px 22px;
+  color: var(--vau-text);
+  background: var(--vau-surface);
+  border: 1px solid var(--vau-line);
+  border-radius: 18px;
+  box-shadow: var(--vau-shadow);
+}
+
+.mg-shell .vau-left,
+.mg-shell .vau-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mg-shell .vau-left {
+  justify-self: start;
+}
+
+.mg-shell .vau-right {
+  justify-self: end;
+  justify-content: flex-end;
+}
+
+.mg-shell .vau-brand-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  color: var(--vau-accent);
+  background: var(--vau-accent-soft);
+  border: 1px solid var(--vau-line);
+  border-radius: 14px;
+}
+
+.mg-shell .vau-brand-mark svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mg-shell .vau-brand-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.mg-shell .vau-brand-text {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -.4px;
+}
+
+.mg-shell .vau-brand-accent {
+  color: var(--vau-accent);
+}
+
+.mg-shell .vau-brand-sub {
+  color: var(--vau-muted);
+  font-size: 12px;
+}
+
+.mg-shell .vau-center {
+  text-align: center;
+}
+
+.mg-shell .vau-title {
+  margin: 0;
+  color: var(--vau-text);
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -.7px;
+}
+
+.mg-shell .vau-sub {
+  margin: 5px 0 0;
+  color: var(--vau-muted);
+  font-size: 13px;
+}
+
+.mg-shell .vau-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 240px;
+  padding: 7px 11px;
+  color: var(--vau-text);
+  border: 1px solid var(--vau-line);
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.mg-shell .vau-account-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mg-shell .vau-badge {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mg-shell .vau-badge-ok {
+  color: var(--vau-ok);
+  background: color-mix(in srgb,var(--vau-ok) 13%,transparent);
+}
+
+.mg-shell .vau-badge-warn {
+  color: var(--vau-warn);
+  background: color-mix(in srgb,var(--vau-warn) 13%,transparent);
+}
+
+.mg-shell .vau-right .dash-btn {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Summary cards */
+
+.mg-shell .vau-stats {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.mg-shell .vau-stat {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+  padding: 21px;
+  color: var(--vau-text);
+  background: var(--vau-surface);
+  border: 1px solid var(--vau-line);
+  border-radius: 17px;
+  box-shadow: var(--vau-shadow);
+  transition: transform .18s ease, border-color .18s ease;
+}
+
+.mg-shell .vau-stat:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb,var(--vau-accent) 45%,var(--vau-line));
+}
+
+.mg-shell .vau-stat > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.mg-shell .vau-stat strong {
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.mg-shell .vau-stat span:not(.vau-stat-icon) {
+  color: var(--vau-muted);
+  font-size: 13px;
+}
+
+.mg-shell .vau-stat-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 47px;
+  width: 47px;
+  height: 47px;
+  border-radius: 14px;
+}
+
+.mg-shell .vau-stat-icon svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mg-shell .vau-tone-blue {
+  color: var(--vau-accent);
+  background: var(--vau-accent-soft);
+}
+
+.mg-shell .vau-tone-teal {
+  color: var(--vau-teal);
+  background: color-mix(in srgb,var(--vau-teal) 12%,transparent);
+}
+
+.mg-shell .vau-tone-amber {
+  color: var(--vau-warn);
+  background: color-mix(in srgb,var(--vau-warn) 12%,transparent);
+}
+
+/* Users panel */
+
+.mg-shell .vau-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--vau-line);
+  border-radius: 18px;
+  box-shadow: var(--vau-shadow);
+}
+
+.mg-shell .vau-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: 10px;
+  padding: 4px 9px;
+  color: var(--vau-ok);
+  background: color-mix(in srgb,var(--vau-ok) 12%,transparent);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.mg-shell .vau-live-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 4px color-mix(in srgb,var(--vau-ok) 12%,transparent);
+  animation: vau-pulse 2s infinite;
+}
+
+@keyframes vau-pulse {
+  50% { box-shadow: 0 0 0 7px transparent; }
+}
+
+/* Toolbar */
+
+.mg-shell .vau-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 22px 18px;
+}
+
+.mg-shell .vau-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 260px;
+  max-width: 390px;
+  min-height: 43px;
+  padding: 0 13px;
+  color: var(--vau-muted);
+  background: var(--vau-surface-2);
+  border: 1px solid var(--vau-line);
+  border-radius: 11px;
+  transition: border-color .18s, box-shadow .18s;
+}
+
+.mg-shell .vau-search:focus-within {
+  border-color: var(--vau-accent);
+  box-shadow: 0 0 0 3px var(--vau-accent-soft);
+}
+
+.mg-shell .vau-search svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.mg-shell .vau-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  color: var(--vau-text);
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font: inherit;
+  font-size: 13px;
+}
+
+.mg-shell .vau-search input::placeholder {
+  color: var(--vau-muted);
+}
+
+.mg-shell .vau-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.mg-shell .vau-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  color: var(--vau-muted);
+  background: transparent;
+  border: 1px solid var(--vau-line);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.mg-shell .vau-chip:hover {
+  color: var(--vau-text);
+  background: var(--vau-hover);
+}
+
+.mg-shell .vau-chip.is-active {
+  color: var(--vau-accent);
+  background: var(--vau-accent-soft);
+  border-color: var(--vau-accent);
+}
+
+.mg-shell .vau-chip-count {
+  min-width: 20px;
+  padding: 2px 5px;
+  color: var(--vau-text);
+  background: var(--vau-surface-2);
+  border-radius: 6px;
+  text-align: center;
+  font-size: 11px;
+}
+
+/* General buttons */
+
+.mg-shell .vau-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  color: var(--vau-text);
+  background: var(--vau-surface-2);
+  border: 1px solid var(--vau-line);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .18s,border-color .18s,opacity .18s;
+}
+
+.mg-shell .vau-btn svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mg-shell .vau-btn:hover:not(:disabled) {
+  border-color: var(--vau-accent);
+  background: var(--vau-accent-soft);
+}
+
+.mg-shell .vau-btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.mg-shell .vau-btn-danger {
+  color: #fff;
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.mg-shell .vau-btn-danger:hover:not(:disabled) {
+  color: #fff;
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.mg-shell .vau-btn:focus-visible,
+.mg-shell .vau-chip:focus-visible,
+.mg-shell .vau-icon-btn:focus-visible {
+  outline: 2px solid var(--vau-accent);
+  outline-offset: 3px;
+}
+
+/* Table */
+
+.mg-shell .vau-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-top: 1px solid var(--vau-line);
+}
+
+.mg-shell .vau-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--vau-text);
+  font-size: 13px;
+}
+
+.mg-shell .vau-table th,
+.mg-shell .vau-table td {
+  padding: 15px 20px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--vau-line);
+}
+
+.mg-shell .vau-table thead th {
+  padding-top: 13px;
+  padding-bottom: 13px;
+  color: var(--vau-muted);
+  background: var(--vau-surface-2);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .65px;
+  white-space: nowrap;
+}
+
+.mg-shell .vau-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.mg-shell .vau-table tbody tr:not(.vau-empty-row) {
+  transition: background .15s;
+}
+
+.mg-shell .vau-table tbody tr:not(.vau-empty-row):hover {
+  background: var(--vau-hover);
+}
+
+.mg-shell .vau-empty-row td {
+  padding: 42px 20px;
+  color: var(--vau-muted);
+  text-align: center;
+  line-height: 1.7;
+}
+
+.mg-shell .vau-cell-email {
+  overflow-wrap: anywhere;
+}
+
+.mg-shell .vau-user {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 150px;
+}
+
+.mg-shell .vau-user-name {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.mg-shell .vau-you {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 3px 6px;
+  color: var(--vau-accent);
+  background: var(--vau-accent-soft);
+  border-radius: 6px;
+  font-size: 10px;
+  font-style: normal;
+}
+
+.mg-shell .vau-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 37px;
+  width: 37px;
+  height: 37px;
+  color: #fff;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.mg-shell .vau-avatar-1 { background: #3478f6; }
+.mg-shell .vau-avatar-2 { background: #0d9488; }
+.mg-shell .vau-avatar-3 { background: #d97706; }
+.mg-shell .vau-avatar-4 { background: #8b5cf6; }
+
+.mg-shell .vau-devchips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mg-shell .vau-devchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 165px;
+  padding: 5px 8px;
+  overflow: hidden;
+  color: var(--vau-text);
+  background: var(--vau-surface-2);
+  border: 1px solid var(--vau-line);
+  border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mg-shell .vau-devchip-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--vau-muted);
+}
+
+.mg-shell .vau-devchip.is-on .vau-devchip-dot {
+  background: var(--vau-ok);
+}
+
+.mg-shell .vau-devchip-more {
+  color: var(--vau-muted);
+  font-family: inherit;
+}
+
+/* Red delete icon */
+
+.mg-shell .vau-col-action {
+  width: 1%;
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.mg-shell .vau-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: var(--vau-danger);
+  background: var(--vau-danger-soft);
+  border: 1px solid color-mix(in srgb,var(--vau-danger) 35%,transparent);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background .18s,border-color .18s,transform .18s;
+}
+
+.mg-shell .vau-icon-btn svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mg-shell .vau-icon-btn-danger:hover:not(:disabled) {
+  color: #fff;
+  background: #dc2626;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+}
+
+.mg-shell .vau-icon-btn-danger:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.mg-shell .vau-btn-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+}
+
+/* Pagination */
+
+.mg-shell .vau-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  color: var(--vau-muted);
+  border-top: 1px solid var(--vau-line);
+  font-size: 12px;
+}
+
+.mg-shell .vau-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mg-shell .vau-pagination-page {
+  color: var(--vau-text);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Delete confirmation */
+
+.mg-shell .vau-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  padding: 0;
+  background: rgba(2,6,23,.72);
+  border: 0;
+  cursor: default;
+  animation: vau-fade .15s ease-out;
+  backdrop-filter: blur(4px);
+}
+
+.mg-shell .vau-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1001;
+  width: min(460px,calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 24px;
+  overflow-y: auto;
+  color: var(--vau-text);
+  background: var(--vau-surface);
+  border: 1px solid var(--vau-line);
+  border-radius: 20px;
+  box-shadow: 0 28px 90px rgba(0,0,0,.35);
+  transform: translate(-50%,-50%);
+  animation: vau-pop .18s ease-out;
+}
+
+@keyframes vau-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes vau-pop {
+  from { opacity: 0; transform: translate(-50%,calc(-50% + 10px)); }
+  to { opacity: 1; transform: translate(-50%,-50%); }
+}
+
+.mg-shell .vau-dialog-head {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 18px;
+}
+
+.mg-shell .vau-dialog-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  color: var(--vau-danger);
+  background: var(--vau-danger-soft);
+  border-radius: 14px;
+}
+
+.mg-shell .vau-dialog-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mg-shell .vau-dialog-title {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.mg-shell .vau-dialog-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 17px;
+  padding: 13px;
+  background: var(--vau-surface-2);
+  border: 1px solid var(--vau-line);
+  border-radius: 13px;
+}
+
+.mg-shell .vau-dialog-user > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.mg-shell .vau-dialog-user strong {
+  overflow-wrap: anywhere;
+}
+
+.mg-shell .vau-dialog-user span {
+  color: var(--vau-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.mg-shell .vau-dialog-text p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.mg-shell .vau-warning {
+  padding: 11px 12px;
+  color: var(--vau-warn);
+  background: color-mix(in srgb,var(--vau-warn) 12%,transparent);
+  border-radius: 10px;
+}
+
+.mg-shell .vau-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+}
+
+.mg-shell .vau-confirm input {
+  width: 100%;
+  min-height: 43px;
+  padding: 0 12px;
+  color: var(--vau-text);
+  background: var(--vau-surface-2);
+  border: 1px solid var(--vau-line);
+  border-radius: 10px;
+  outline: none;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.mg-shell .vau-confirm input:focus {
+  border-color: var(--vau-danger);
+  box-shadow: 0 0 0 3px var(--vau-danger-soft);
+}
+
+.mg-shell .vau-dialog-error {
+  margin: 12px 0 0;
+  padding: 11px 12px;
+  color: var(--vau-danger);
+  background: var(--vau-danger-soft);
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.mg-shell .vau-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+/* Toast */
+
+.mg-shell .vau-toast {
+  position: fixed;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom,0px));
+  z-index: 1100;
+  max-width: min(390px,calc(100% - 40px));
+  padding: 14px 17px;
+  color: var(--vau-text);
+  background: var(--vau-surface);
+  border: 1px solid var(--vau-line);
+  border-left: 4px solid var(--vau-accent);
+  border-radius: 12px;
+  box-shadow: var(--vau-shadow);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  animation: vau-fade .2s ease-out;
+}
+
+.mg-shell .vau-toast-success {
+  border-left-color: var(--vau-ok);
+}
+
+.mg-shell .vau-toast-error {
+  border-left-color: var(--vau-danger);
+}
+
+/* Tablet */
+
+@media (max-width: 1000px) {
+  .mg-shell .vau-header {
+    grid-template-columns: minmax(0,1fr) auto;
+    grid-template-areas: "left right" "center center";
+    row-gap: 16px;
+  }
+
+  .mg-shell .vau-left { grid-area: left; }
+  .mg-shell .vau-right { grid-area: right; }
+  .mg-shell .vau-center {
+    grid-area: center;
+    padding-top: 15px;
+    border-top: 1px solid var(--vau-line);
+  }
+
+  .mg-shell .vau-account {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .mg-shell .vau-stats {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .mg-shell .vau-stat {
+    padding: 16px;
+  }
+
+  .mg-shell .vau-stat strong {
+    font-size: 24px;
+  }
+
+  .mg-shell .vau-toolbar {
+    padding: 4px 16px 16px;
+  }
+
+  .mg-shell .vau-search {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .mg-shell .vau-chips {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .mg-shell .vau-chip {
+    flex: none;
+  }
+
+  .mg-shell .vau-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+  }
+
+  .mg-shell .vau-table,
+  .mg-shell .vau-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .mg-shell .vau-table tbody tr:not(.vau-empty-row) {
+    display: block;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--vau-line);
+  }
+
+  .mg-shell .vau-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .mg-shell .vau-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 9px 0;
+    border: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .mg-shell .vau-table td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    color: var(--vau-muted);
+    font-size: 11px;
+    font-weight: 800;
+    text-align: left;
+  }
+
+  .mg-shell .vau-table td.vau-cell-name {
+    justify-content: flex-start;
+    padding-bottom: 12px;
+  }
+
+  .mg-shell .vau-table td.vau-cell-name::before {
+    display: none;
+  }
+
+  .mg-shell .vau-table td.vau-cell-email {
+    justify-content: space-between;
+  }
+
+  .mg-shell .vau-devchips {
+    justify-content: flex-end;
+  }
+
+  .mg-shell .vau-table td.vau-col-action {
+    display: block;
+    width: auto;
+    padding-top: 12px;
+    text-align: left !important;
+  }
+
+  .mg-shell .vau-icon-btn-danger {
+    width: 100%;
+    height: 42px;
+    color: #fff;
+    background: #dc2626;
+    border-color: #dc2626;
+  }
+
+  .mg-shell .vau-icon-btn-danger:hover:not(:disabled) {
+    background: #b91c1c;
+  }
+
+  .mg-shell .vau-btn-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+
+  .mg-shell .vau-table .vau-empty-row,
+  .mg-shell .vau-table .vau-empty-row td {
+    display: block;
+    width: auto;
+    text-align: center;
+  }
+
+  .mg-shell .vau-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 15px 16px;
+    text-align: center;
+  }
+
+  .mg-shell .vau-pagination-controls {
+    justify-content: space-between;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 560px) {
+  .mg-shell .vau-header {
+    grid-template-columns: minmax(0,1fr);
+    grid-template-areas: "left" "center" "right";
+    gap: 14px;
+    padding: 15px;
+  }
+
+  .mg-shell .vau-brand-mark {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+
+  .mg-shell .vau-brand-text {
+    font-size: 17px;
+  }
+
+  .mg-shell .vau-center {
+    padding-top: 13px;
+  }
+
+  .mg-shell .vau-title {
+    font-size: 21px;
+  }
+
+  .mg-shell .vau-right {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .mg-shell .vau-right .dash-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mg-shell .vau-stat {
+    gap: 12px;
+  }
+
+  .mg-shell .vau-dialog {
+    padding: 19px;
+    border-radius: 17px;
+  }
+
+  .mg-shell .vau-dialog-actions {
+    flex-direction: column-reverse;
+  }
+
+  .mg-shell .vau-dialog-actions > .vau-btn {
+    width: 100%;
+    min-height: 43px;
+  }
+
+  .mg-shell .vau-toast {
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom,0px));
+    left: 12px;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mg-shell .vau-live-dot,
+  .mg-shell .vau-overlay,
+  .mg-shell .vau-dialog,
+  .mg-shell .vau-toast {
+    animation: none;
+  }
+
+  .mg-shell .vau-stat,
+  .mg-shell .vau-icon-btn {
+    transition: none;
+  }
+}

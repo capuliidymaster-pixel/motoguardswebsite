@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./Dashboard.jsx";
 import ViewAllUsers from "./ViewAllUsers.jsx";
 import Map from "./Map.jsx";
-import Profile from "./Profile.jsx";
 import Login from "./login.jsx";
 import ProtectedRoute from "./Protectedroute.jsx";
 
@@ -52,16 +51,6 @@ function App() {
         element={
           <ProtectedRoute>
             <Map isDarkMode={isDarkMode} />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Profile Route - User Profile (Protected) */}
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile isDarkMode={isDarkMode} />
           </ProtectedRoute>
         }
       />
